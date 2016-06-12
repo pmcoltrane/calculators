@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>EMDrive Calculator</title>
+    <style>
+      input, select, button {display: table-cell;}
+      label {display: table-cell;}
+      form {display: table;}
+      .input-row {display: table-row;}
+      thead td {font-weight: bold;}
+    </style>
+    <script type="text/javascript">
+      function calculate(){
+        var E = document.getElementById.bind(document);
+        
+        var power = parseFloat(E('txtPower').value) * parseFloat(E('optPowerUnit').value);
+        
+        var q = parseFloat(E('txtQ').value);
+        var length = parseFloat(E('txtLength').value) * parseFloat(E('optLengthUnit').value);
+        var ws = parseFloat(E('txtWs').value) * parseFloat(E('optWsUnit').value);
+        var wb = parseFloat(E('txtWb').value) * parseFloat(E('optWbUnit').value);
+        
+        //TODO: support unit setting
+        
+        var f = 6 * power * q * length / 3e8 * (1/(length + 4 * ws) - 1/(length + 4 * wb));
+        
+        var scale = Math.floor(Math.log(f) / Math.log(10) / 3);
+        var fScaled;
+        var unit;
+        switch(scale){
+          case 0:
+            fScaled = f;
+            unit = 'N';
+            break;
+          case 1:
+            fScaled = f/1000;
+            unit='kN';
+            break;
+          case 2:
+            fScaled = f/1000000;
+            unit='MN';
+            break;
+          case 3:
+            fScaled = f/1000000000;
+            unit='GN';
+            break;
+          case -1:
+            fScaled = f*1000;
+            unit='mN';
+            break;
+          default:
+            fScaled = f;
+            unit = 'N';
+            break;
+        }
+        document.getElementById('spanForce').innerText = fScaled.toFixed(4) + ' ' + unit;
+      }
+    </script>
+  </head>
+  <body>
+    <h3>Explanation</h3>
+    
+    <p><a href="https://en.wikipedia.org/wiki/RF_resonant_cavity_thruster">Resonant cavity thrusters</a> such as the EMDrive and the Cannae drive have been in the popular media the past few years.
+    The designs all share some similarities: a magnetron that pumps microwaves into a cavity in some sort of blunted shape.
+    This supposedly produces an anomalous thrust (violating conservation of momentum), typically explained by some handwavey process involving "quantum".</p>
+    
+    <p>In the paper "<a href="http://arxiv.org/pdf/1604.03449v1.pdf">Testing quantized inertia on the emdrive</a>", ME McCulloch proposes that this thrust can be explained by quantized inertia.
+    McCulloch also provides a formula for force calculation that, when compared with experimental results so far, is <a href="http://www.smart-words.org/humor-jokes/language-humor/research-phrases-meaning.html">correct within an order of magnitude</a>.</p>
+    <p>This calculator uses McCulloch's formula to provide a calculator for resonant cavity drives, along with the table of experimental data from that paper for reference.</p>
+    
+    <h3>Disclaimers</h3>
+    <ul>
+      <li>For entertainment purposes only. Not to be used for mission-critical calculations.</li>
+      <li>Microwave radiation can be dangerous. Use caution when working with magnetrons.</li>
+      <li>Breaking the laws of physics probably isn't a good idea, either.</li>
+    </ul>
+    
+    <h3>Inputs</h3>
+    <p class="input-row">
+      <label for="txtPower">Power: </label>
+      <input id="txtPower" type="number" min="0" max="1000" value="850" onchange="calculate()"/>
+      <select id="optPowerUnit" onchange="calculate()">
+        <option value="1" selected>Watt</option>
+        <option value="1000">kW</option>
+        <option value="1000000">MW</option>
+        <option value="1000000000">GW</option>
+      </select>
+    </p>
+    
+    <p class="input-row">
+      <label for="txtQ">Q: </label>
+      <input id="txtQ" type="number" value="5900" onchange="calculate()"/>
+    </p>
+    
+    <p class="input-row">
+      <label for="txtLength">Length: </label>
+      <input id="txtLength" type="number" min="0" max="1000" value="0.156" onchange="calculate()"/>
+      <select id="optLengthUnit" onchange="calculate()">
+        <option value="0.001">mm</option>
+        <option value="0.01">cm</option>
+        <option value="1" selected>m</option>
+      </select>
+    </p>
+
+    <p class="input-row">
+      <label for="txtWb">Big end: </label>
+      <input id="txtWb" type="number" min="0" max="1000" value="0.16" onchange="calculate()"/>
+      <select id="optWbUnit" onchange="calculate()">
+        <option value="0.001">mm</option>
+        <option value="0.01">cm</option>
+        <option value="1" selected>m</option>
+      </select>
+    </p>
+    
+    <p class="input-row">
+      <label for="txtWs">Small end: </label>
+      <input id="txtWs" type="number" min="0" max="1000" value="0.1275" onchange="calculate()"/>
+      <select id="optWsUnit" onchange="calculate()">
+        <option value="0.001">mm</option>
+        <option value="0.01">cm</option>
+        <option value="1" selected>m</option>
+      </select>
+    </p>
+
+    <p class="input-row">    
+      <button onclick="calculate()">Calculate</button>
+    </p>
+    
+    <h3>Result</h3>
+    <p>
+      <strong>Force: </strong>
+      <span id="spanForce"></span>
+    </p>
+
+    <h3>Reference</h3>
+    
+    <p>Reference table from McCulloch, table 1.</p>
+    <table>
+      <thead>
+        <tr><td>Experiment</td><td>Power (W)</td><td>Q</td><td>L</td><td>W<sub>big</sub> (m)</td><td>W<sub>small</sub> (m)</td><td>F<sub>observed</sub> (mN)</td></tr>
+      </thead>
+      <tbody>
+        <tr><td>Shawyer 1</td><td>850</td><td>5900</td><td>0.156</td><td>0.16</td><td>0.1275</td><td>16</td></tr>
+        <tr><td>Shawyer 2</td><td>1000</td><td>45000</td><td>0.345</td><td>0.28</td><td>0.1289</td><td>80-214</td></tr>
+        <tr><td>Cannae</td><td>10.5</td><td>11e6</td><td>0.03</td><td>0.22</td><td>0.2</td><td>9</td></tr>
+        <tr><td>Brady 1</td><td>16.9</td><td>7320</td><td>0.2286</td><td>0.2794</td><td>0.1588</td><td>0.091</td></tr>
+        <tr><td>Brady 2</td><td>16.7</td><td>18100</td><td>"</td><td>"</td><td>"</td><td>0.05</td></tr>
+        <tr><td>Brady 3</td><td>2.6</td><td>22000</td><td>"</td><td>"</td><td>"</td><td>0.055</td></tr>
+        <tr><td>Brady 4 (vacuum)</td><td>50</td><td>6730</td><td>"</td><td>"</td><td>"</td><td>0.03</td></tr>
+        <tr><td>Tajmar & Fiedler</td><td>700</td><td>20</td><td>0.1008</td><td>0.1062</td><td>0.075</td><td>0.02-0.11</td></tr>
+      </tbody>
+    </table>
+  </body>
+</html>
